@@ -17,7 +17,7 @@ return [
     ],
     'production' => env('NINJA_PROD', false),
     'license' => env('NINJA_LICENSE', ''),
-    'version_url' => 'https://pdf.invoicing.co/api/version',
+    'version_url' => env('VERSION_URL', 'https://pdf.invoicing.co/api/version'),
     'app_name' => env('APP_NAME', 'Invoice Ninja'),
     'app_env' => env('APP_ENV', 'selfhosted'),
     'app_logo' => env('APP_LOGO', 'https://invoicing.co/images/new_logo.png'),

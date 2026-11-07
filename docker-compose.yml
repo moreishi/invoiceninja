@@ -1,0 +1,73 @@
+# Reference topology for local runs and Docker Compose based deploys.
+# Coolify users: see docs/COOLIFY.md — you can either import this file or run
+# the three application services from the same image.
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        # Real GitHub token for the VCS dependencies (einvoice, snappdf).
+        COMPOSER_AUTH: ${COMPOSER_AUTH:-}
+    image: invoiceninja-premium-business:latest
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      RUN_MIGRATIONS: "true"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - storage:/app/storage
+    restart: unless-stopped
+
+  worker:
+    image: invoiceninja-premium-business:latest
+    command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=120", "--max-time=3600"]
+    env_file: .env
+    depends_on:
+      - app
+    volumes:
+      - storage:/app/storage
+    restart: unless-stopped
+
+  scheduler:
+    image: invoiceninja-premium-business:latest
+    command: ["php", "artisan", "schedule:work"]
+    env_file: .env
+    depends_on:
+      - app
+    volumes:
+      - storage:/app/storage
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE:-ninja}
+      MARIADB_USER: ${DB_USERNAME:-ninja}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-ninja}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis:/data
+    restart: unless-stopped
+
+volumes:
+  storage:
+  db:
+  redis:

@@ -13,7 +13,6 @@
 namespace App\Utils;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 /**
  * Class Ninja.
@@ -58,26 +57,6 @@ class Ninja
         return $info;
     }
 
-    public static function boot()
-    {
-        if (self::isNinjaDev()) {
-            return true;
-        }
-
-        $data = [
-            'license' => config('ninja.license'),
-        ];
-
-        $data = trim(CurlUtils::post('https://license.invoicing.co/api/check', $data));
-        $data = json_decode($data);
-
-        if ($data && property_exists($data, 'message') && $data->message == sha1(config('ninja.license'))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public static function parse()
     {
         return 'Invalid license.';
@@ -86,35 +65,6 @@ class Ninja
     public static function selfHostedMessage()
     {
         return 'Self hosted installation limited to one account';
-    }
-
-    public static function registerNinjaUser($user)
-    {
-        if (! $user || $user->email == self::TEST_USERNAME || self::isNinjaDev()) {
-            return false;
-        }
-
-        $url = config('ninja.license_url') . '/signup/register';
-        $data = '';
-        $fields = [
-            'first_name' => urlencode($user->first_name),
-            'last_name' => urlencode($user->last_name),
-            'email' => urlencode($user->email),
-        ];
-
-        foreach ($fields as $key => $value) {
-            $data .= $key . '=' . $value . '&';
-        }
-
-        $data = rtrim($data, '&');
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_exec($ch);
-        curl_close($ch);
     }
 
     public static function eventVars($user_id = null)
@@ -152,22 +102,6 @@ class Ninja
         }
 
         return $translations;
-    }
-
-    public static function triggerForwarding(string $company_key, string $email)
-    {
-        try {
-            $x = Http::withHeaders([
-                'X-API-HOSTED-SECRET' => config('ninja.ninja_hosted_secret'),
-            ])->post(config('ninja.license_url') . '/api/v1/enable_forwarding', [
-                'account_key' => $company_key,
-                'email' => $email,
-            ]);
-
-            nlog($x->body());
-        } catch (\Exception $e) {
-            nlog("Attempt forwarding for {$email} - {$company_key} Failed");
-        }
     }
 
     public function createLicense($request)

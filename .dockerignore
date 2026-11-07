@@ -1,0 +1,44 @@
+.git
+.gitignore
+.github
+.commandcode
+.vscode
+.idea
+
+node_modules
+vendor
+public/build
+public/hot
+
+.env
+.env.*
+!.env.example
+*.log
+
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/public/*
+
+# The squashed schema is loaded through the `mysql` CLI by Laravel, which
+# forces TLS on recent MariaDB clients. Excluding it makes `migrate` import the
+# individual migrations over PDO, which works with or without DB TLS.
+database/schema/*.sql
+
+tests
+phpunit.xml
+phpunit.xml.dist
+phpstan.neon
+phpstan-baseline.neon
+playwright.config.ts
+tests/e2e/report
+test-results
+playwright-report
+
+docs
+*.md
+!README.md
+Dockerfile
+docker-compose.yml
+.dockerignore

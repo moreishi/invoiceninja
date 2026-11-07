@@ -53,22 +53,24 @@ class VersionCheck implements ShouldQueue
         if (Ninja::isSelfHost()) {
             nlog("latest version = {$version_file}");
 
-            /** @var \App\Models\Account $account **/
-            $account = Account::first();
+            Account::query()
+                ->where('plan', Account::PLAN_WHITE_LABEL)
+                ->whereNotNull('plan_expires')
+                ->each(function (Account $account) {
+                    $expires = Carbon::parse($account->plan_expires);
 
-            if (! $account) {
-                return;
-            }
+                    if (! $expires->lt(now()) && ! $expires->gt(now()->addYear()->addDays(30))) {
+                        return;
+                    }
 
-            if ($account->plan == 'white_label' && $account->plan_expires && (Carbon::parse($account->plan_expires)->lt(now()) || Carbon::parse($account->plan_expires)->gt(now()->addYear()->addDays(30)))) {
-                $valid = (new LicenseValidityService())->isValid($account);
+                    if ((new LicenseValidityService())->isValid($account)) {
+                        return;
+                    }
 
-                if (! $valid) {
                     $account->plan = null;
                     $account->plan_expires = null;
                     $account->saveQuietly();
-                }
-            }
+                });
 
             Client::query()->whereNull('country_id')->cursor()->each(function ($client) {
                 $client->country_id = $client->company->settings->country_id;

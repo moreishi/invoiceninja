@@ -43,8 +43,6 @@ class UserService
             }
 
             NinjaMailerJob::dispatch($nmo, true);
-
-            Ninja::registerNinjaUser($this->user);
         } catch (\Exception $e) {
             nlog("I couldn't send the verification email " . $e->getMessage());
         }
