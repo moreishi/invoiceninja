@@ -14,7 +14,6 @@ namespace Tests\Feature\Ninja;
 
 use App\Factory\SubscriptionFactory;
 use App\Models\Account;
-use App\Models\License;
 use App\Models\RecurringInvoice;
 use App\Utils\Traits\MakesHash;
 use Carbon\Carbon;
@@ -85,25 +84,4 @@ class PlanTest extends TestCase
 
         $this->assertEquals($date->addMonthNoOverflow()->startOfDay(), $next_date->startOfDay());
     }
-
-    // public function testLicense()
-    // {
-    //     $this->markTestSkipped();
-
-    //     $license = new License();
-    //     $license->license_key = "1234";
-    //     $license->product_id = "3";
-    //     $license->email = 'test@gmail.com';
-    //     $license->is_claimed = 1;
-    //     $license->save();
-
-    //     $license->fresh();
-
-    //     $response = $this->get("/claim_license?license_key=1234&product_id=3")
-    //                 ->assertStatus(200);
-
-    //     $response = $this->get("/claim_license?license_key=12345&product_id=3")
-    //                 ->assertStatus(400);
-
-    // }
 }

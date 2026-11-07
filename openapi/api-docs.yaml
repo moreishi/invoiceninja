@@ -5256,49 +5256,6 @@ paths:
         default:
           $ref: "#/components/responses/default"
   
-  /api/v1/claim_license:
-    get:
-      tags:
-        - claim_license
-      summary: "Attempts to claim a white label license"
-      description: "Attempts to claim a white label license"
-      operationId: getClaimLicense
-      parameters:
-        - $ref: "#/components/parameters/X-Requested-With"
-        - name: license_key
-          in: query
-          description: "The license hash"
-          required: true
-          schema:
-            type: string
-            format: string
-          example: d87sh-s755s-s7d76-sdsd8
-        - name: product_id
-          in: query
-          description: "The ID of the product purchased."
-          required: true
-          schema:
-            type: string
-            format: string
-          example: "1"
-      responses:
-        200:
-          description: Success!
-          headers:
-            X-MINIMUM-CLIENT-VERSION:
-              $ref: "#/components/headers/X-MINIMUM-CLIENT-VERSION"
-            X-RateLimit-Remaining:
-              $ref: "#/components/headers/X-RateLimit-Remaining"
-            X-RateLimit-Limit:
-              $ref: "#/components/headers/X-RateLimit-Limit"
-        401:
-          $ref: "#/components/responses/401"
-        403:
-          $ref: "#/components/responses/403"
-        422:
-          $ref: "#/components/responses/422"
-        default:
-          $ref: "#/components/responses/default"
   /api/v1/logout:
     post:
       tags:
@@ -29573,11 +29530,6 @@ tags:
     x-displayName: Charts
     description: |
       Endpoint definitions for interacting with charts.
-
-  - name: claim_license
-    x-displayName: Claim License
-    description: |
-      Endpoint definitions for claiming licenses.
 
   - name: client_gateway_tokens
     x-displayName: Client Gateway Tokens

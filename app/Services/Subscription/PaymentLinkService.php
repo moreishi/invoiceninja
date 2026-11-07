@@ -33,8 +33,6 @@ class PaymentLinkService
 {
     use MakesHash;
 
-    public const WHITE_LABEL = 4316;
-
     public function __construct(public Subscription $subscription) {}
 
     /**
@@ -56,10 +54,6 @@ class PaymentLinkService
         if ($payment_hash->data->billing_context->context == 'change_plan') {
             return $this->handlePlanChange($payment_hash);
         }
-
-        // if ($payment_hash->data->billing_context->context == 'whitelabel') {
-        //     return $this->handleWhiteLabelPurchase($payment_hash);
-        // }
 
         if (strlen($this->subscription->recurring_product_ids ?? '') >= 1) {
 

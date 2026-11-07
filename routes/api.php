@@ -51,7 +51,6 @@ use App\Http\Controllers\ImportJsonController;
 use App\Http\Controllers\ImportQuickbooksController;
 use App\Http\Controllers\InAppPurchase\AppleController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\MailerController;
@@ -198,9 +197,6 @@ Route::group(['middleware' => ['throttle:api', 'token_auth', 'valid_json','local
     Route::post('charts/client_payment_analytics', [ChartController::class, 'client_payment_analytics'])->name('chart.client_payment_analytics');
     Route::post('charts/project_analytics/{project}', [ChartController::class, 'project_analytics'])->name('chart.project_analytics');
     Route::post('charts/project_burnup/{project}', [ChartController::class, 'projectBurnup'])->name('chart.project_burnup');
-
-    Route::post('claim_license', [LicenseController::class, 'index'])->name('license.index');
-    Route::post('check_license', [LicenseController::class, 'check'])->name('license.check');
 
     Route::resource('clients', ClientController::class); // name = (clients. index / create / show / update / destroy / edit
     Route::put('clients/{client}/upload', [ClientController::class, 'upload'])->name('clients.upload');

@@ -205,11 +205,9 @@ class PaymentHtmlEngine
         $data['$total'] = ['value' => '', 'label' => ctrans('texts.total')];
         $data['$history'] = ['value' => '', 'label' => ctrans('texts.history')];
 
-        if ($this->payment->status_id == 4) {
-            $data['$status_logo'] = ['value' => '<div class="stamp is-paid"> ' . ctrans('texts.paid') . '</div>', 'label' => ''];
-        } else {
-            $data['$status_logo'] = ['value' => '', 'label' => ''];
-        }
+        // The PAID watermark is not rendered on payment PDFs.
+        $data['$status_logo'] = ['value' => '', 'label' => ''];
+        $data['$show_paid_stamp'] = ['value' => 'none', 'label' => ''];
 
         $arrKeysLength = array_map('strlen', array_keys($data));
         array_multisort($arrKeysLength, SORT_DESC, $data);

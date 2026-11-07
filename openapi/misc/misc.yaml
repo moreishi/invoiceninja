@@ -161,11 +161,6 @@ tags:
     description: |
       Endpoint definitions for interacting with charts.
 
-  - name: claim_license
-    x-displayName: Claim License
-    description: |
-      Endpoint definitions for claiming licenses.
-
   - name: client_gateway_tokens
     x-displayName: Client Gateway Tokens
     description: |

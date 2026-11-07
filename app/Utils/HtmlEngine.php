@@ -295,13 +295,11 @@ class HtmlEngine
             $data['$invoice.project'] = &$data['$project.name'];
             $data['$quote.project'] = &$data['$project.name'];
 
-            $data['$status_logo'] = ['value' => '<div class="stamp is-paid"> ' . ctrans('texts.paid') . '</div>', 'label' => ''];
+            // The PAID/CANCELLED watermark is not rendered on PDFs. The values
+            // remain defined so templates keep resolving cleanly.
+            $data['$status_logo'] = ['value' => '', 'label' => ''];
 
-            if ($this->entity->status_id == 5) {
-                $data['$status_logo'] = ['value' => '<div class="stamp is-paid"> ' . ctrans('texts.cancelled') . '</div>', 'label' => ''];
-            }
-
-            $data['$show_paid_stamp'] = ['value' => in_array($this->entity->status_id, [4,5]) && $this->settings->show_paid_stamp ? 'flex' : 'none', 'label' => ''];
+            $data['$show_paid_stamp'] = ['value' => 'none', 'label' => ''];
 
             $data['$invoice.vendor'] = ['value' => $this->entity->vendor?->present()->name() ?: '', 'label' => ctrans('texts.vendor_name')];
 

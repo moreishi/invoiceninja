@@ -4,7 +4,7 @@ return [
 
     'web_url' => 'https://www.invoiceninja.com',
     'admin_token' => env('NINJA_ADMIN_TOKEN', ''),
-    'license_url' => 'https://app.invoiceninja.com',
+    'license_url' => env('LICENSE_URL', 'https://app.invoiceninja.com'),
     'react_url' => env('REACT_URL', env('APP_URL', '')),
     'calendar' => [
         'native_redirect' => env('CALENDAR_NATIVE_REDIRECT', 'invoiceninja://calendar_connection/complete'),

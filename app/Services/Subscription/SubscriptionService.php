@@ -27,7 +27,6 @@ use App\Models\Client;
 use App\Models\ClientContact;
 use App\Models\Credit;
 use App\Models\Invoice;
-use App\Models\License;
 use App\Models\PaymentHash;
 use App\Models\PaymentType;
 use App\Models\Product;
@@ -39,16 +38,12 @@ use App\Repositories\InvoiceRepository;
 use App\Repositories\PaymentRepository;
 use App\Repositories\RecurringInvoiceRepository;
 use App\Repositories\SubscriptionRepository;
-use App\Services\Email\Email;
-use App\Services\Email\EmailObject;
 use App\Utils\Traits\CleanLineItems;
 use App\Utils\Traits\MakesHash;
 use App\Utils\Traits\Notifications\UserNotifies;
 use App\Utils\Traits\SubscriptionHooker;
 use Carbon\Carbon;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Str;
-use Illuminate\Mail\Mailables\Address;
 
 class SubscriptionService
 {
@@ -59,8 +54,6 @@ class SubscriptionService
 
     /** @var subscription */
     private $subscription;
-
-    public const WHITE_LABEL = 4316;
 
     private array $peppol_keys = [
         'peppol_500',
@@ -91,7 +84,9 @@ class SubscriptionService
         }
 
         if ($payment_hash->data->billing_context->context == 'whitelabel') {
-            return $this->handleWhiteLabelPurchase($payment_hash);
+            nlog('White label purchase is no longer supported, no license was issued.');
+
+            return false;
         }
 
         if (in_array($payment_hash->data->billing_context->context, $this->peppol_keys)) {
@@ -187,64 +182,6 @@ class SubscriptionService
             (new \Modules\Admin\Jobs\Account\PeppolPurchase($payment_hash))->run();
         }
 
-    }
-
-    private function handleWhiteLabelPurchase(PaymentHash $payment_hash): bool
-    {
-        //send license to the user.
-        $invoice = $payment_hash->fee_invoice;
-        $license_key = "v5_" . Str::uuid()->toString();
-        $invoice->footer = ctrans('texts.white_label_body', ['license_key' => $license_key]);
-
-        $recurring_invoice = $this->convertInvoiceToRecurring($payment_hash->payment->client_id);
-
-        $recurring_invoice_repo = new RecurringInvoiceRepository();
-        $recurring_invoice = $recurring_invoice_repo->save([], $recurring_invoice);
-        $recurring_invoice->auto_bill = $this->subscription->auto_bill;
-        $recurring_invoice->auto_bill_enabled =  $this->setAutoBillFlag($recurring_invoice->auto_bill);
-        $recurring_invoice->footer = $invoice->footer;
-
-        /* Start the recurring service */
-        $recurring_invoice->service()
-                            ->start()
-                            ->save();
-
-        //update the invoice and attach to the recurring invoice!!!!!
-        $invoice->recurring_id = $recurring_invoice->id;
-        $invoice->is_proforma = false;
-        $invoice->save();
-
-        $contact = $invoice->client->contacts()->whereNotNull('email')->first();
-
-        $license = new License();
-        $license->license_key = $license_key;
-        $license->email = $contact ? $contact->email : ' ';
-        $license->first_name = $contact ? $contact->first_name : ' ';
-        $license->last_name = $contact ? $contact->last_name : ' ';
-        $license->is_claimed = 1;
-        $license->transaction_reference = $payment_hash?->payment?->transaction_reference ?: ' '; //@phpstan-ignore-line
-        $license->product_id = self::WHITE_LABEL;
-        $license->recurring_invoice_id = $recurring_invoice->id;
-
-        $license->save();
-
-        $invitation = $invoice->invitations()->first();
-
-        $email_object = new EmailObject();
-        $email_object->to = [new Address($contact->email, $contact->present()->name())];
-        $email_object->subject = ctrans('texts.white_label_link') . " " . ctrans('texts.payment_subject');
-        $email_object->body = ctrans('texts.white_label_body', ['license_key' => $license_key]);
-        $email_object->client_id = $invoice->client_id;
-        $email_object->client_contact_id = $contact->id;
-        $email_object->invitation_key = $invitation->key;
-        $email_object->invitation_id = $invitation->id;
-        $email_object->entity_id = $invoice->id;
-        $email_object->entity_class = Invoice::class;
-        $email_object->user_id = $invoice->user_id;
-
-        Email::dispatch($email_object, $invoice->company);
-
-        return true;
     }
 
     /* Starts the process to create a trial

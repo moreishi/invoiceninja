@@ -36,12 +36,7 @@ export function accountForParallelIndex(parallelIndex: number): TestAccount {
     return createTestAccount(accountId);
 }
 
-/** Hosted-plan / white-label purchase lane (matches NINJA_COMPANY_ID). */
-export function smallTestAccount(): TestAccount {
-    return accountManagementTestAccount();
-}
-
-/** Hosted account management lane (same owner as white-label / NINJA_COMPANY_ID). */
+/** Hosted account management lane (NINJA_COMPANY_ID). */
 export function accountManagementTestAccount(): TestAccount {
     return {
         id: 0,
